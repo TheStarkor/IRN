@@ -1,0 +1,27 @@
+name: TEST_01
+use_tb_logger: true
+model: IRN
+distortion: sr
+scale: 2
+gpu_ids: [0]
+
+datasets:
+  train:
+    name: DIV2K
+    mode: LQGT
+    dataroot_GT: ~
+    dataroot_LQ: ~
+
+    use_shuffle: true
+    n_workers: 4
+    batch_size: 16
+    GT_size: 144
+    use_flip: true
+    use_rot: true
+    color: RGB
+
+  val:
+    name: val_DIV2K
+    mode: LQGT
+    dataroot_GT: ~
+    dataroot_LQ: ~
