@@ -1,9 +1,10 @@
 import logging
 import torch
-from typing import Dict
+from typing import Dict, Union, Type
+from data.LQGT_dataset import LQGTDataset
 
 
-def create_dataset(dataset_opt: Dict[str, str]):
+def create_dataset(dataset_opt: Dict[str, str]) -> Union[LQGTDataset]:
     mode = dataset_opt["mode"]
     if mode == "LQ":
         # TODO
@@ -13,7 +14,7 @@ def create_dataset(dataset_opt: Dict[str, str]):
     else:
         raise NotImplementedError("Dataset [{:s}] is not recognized.".format(mode))
 
-    dataset = D(dataset_opt)
+    dataset: LQGTDataset = D(dataset_opt)
 
     logger = logging.getLogger("base")
     logger.info(

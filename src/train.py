@@ -1,7 +1,7 @@
 import argparse
 import logging
 import torch
-from typing import Dict
+from typing import Dict, Union
 
 import options.options as option
 from utils import util
@@ -14,7 +14,7 @@ MANUAL_SEED = 10
 def main():
     ### parser
     ### diff : cannot support distribution
-    parser = argparse.ArgumentParser()
+    parser: ArgumentParser = argparse.ArgumentParser()
     parser.add_argument('-opt', type=str, help='Path to YAML file.')
     args = parser.parse_args()
     opt = option.parse(args.opt, is_train=True)
@@ -26,12 +26,12 @@ def main():
     util.setup_logger('base', PATH, 'train_' + NAME, level=logging.INFO, screen=True, tofile=False)
     util.setup_logger('val', PATH, 'val_' + NAME, level=logging.INFO, screen=True, tofile=False)
 
-    logger = logging.getLogger('base')
+    logger: Logger = logging.getLogger('base')
 
     # TODO : tensorboard logger
 
     ### random seed
-    seed = MANUAL_SEED
+    seed: int = MANUAL_SEED
     logger.info(f'Random seed: {seed}')
     util.set_random_seed(seed)
 
@@ -41,7 +41,7 @@ def main():
     ### create train and val dataloader
     for phase, dataset_opt in opt['datasets'].items():
         if phase == 'train':
-            train_set = create_dataset(dataset_opt)
+            train_set: Union[LQGTDataset] = create_dataset(dataset_opt)
         elif phase == 'val':
             print('VAL!')
         else:
