@@ -71,7 +71,6 @@ def main():
         else:
             raise NotImplementedError(f"Phase [{phase:s}] is not recognized")
 
-
     # TODO : create model
 
     # TODO : training

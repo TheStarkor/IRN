@@ -37,8 +37,6 @@ class LQGTDataset(data.Dataset):
         GT_path: Optional[str] = None
         LQ_path: Optional[str] = None
 
-        print(self.opt)
-
         scale: int = int(self.opt["scale"])
         GT_size: int = int(self.opt["GT_size"])
 
@@ -77,8 +75,10 @@ class LQGTDataset(data.Dataset):
                     img_GT = cv2.cvtColor(img_GT, cv2.COLOR_GRAY2BGR)
 
             H, W, _ = img_GT.shape
-            img_LQ = cv2.resize(np.copy(img_GT), (H_s // scale, W_s // scale))
-            # TODO: resize (img_GT, 1 / scale)
+
+            # TODO: resize 비교
+            # img_LQ = cv2.resize(np.copy(img_GT), (H_s // scale, W_s // scale))
+            img_LQ = util.imresize_np(img_GT, 1 / scale, True)
 
         # augmentation
         if self.opt["phase"] == "train":
@@ -89,7 +89,7 @@ class LQGTDataset(data.Dataset):
                 img_GT = cv2.resize(
                     np.copy(img_GT), (GT_size, GT_size), interpolation=cv2.INTER_LINEAR
                 )
-                # TODO: resize (img_GT, 1 / scale)
+                img_LQ = util.imresize_np(img_GT, 1 / scale, True)
                 if img_LQ.ndim == 2:
                     img_LQ = np.expand_dims(img_LQ, axis=2)
 

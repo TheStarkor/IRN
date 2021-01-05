@@ -3,8 +3,10 @@ import logging
 import random
 import numpy as np  # type: ignore
 import torch
+import time
 from datetime import datetime
 from collections import OrderedDict
+from torchvision.utils import save_image  # type: ignore
 
 import yaml
 from yaml import CLoader as Loader, CDumper as Dumper
@@ -64,3 +66,8 @@ def set_random_seed(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+
+
+def debugging_image_torch(data, filename=str(time.time())):
+    save_image(data["LQ"], f"debugging/{filename}_lq.png")
+    save_image(data["GT"], f"debugging/{filename}_gt.png")
