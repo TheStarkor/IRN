@@ -3,9 +3,9 @@ import random
 import cv2  # type: ignore
 import numpy as np  # type: ignore
 import torch
+from typing import Dict, List, Optional, Any, Union
 
 import data.util as util
-from typing import Dict, List, Optional, Any, Union
 
 
 class LQGTDataset(data.Dataset):
@@ -17,15 +17,9 @@ class LQGTDataset(data.Dataset):
 
         self.paths_LQ: Optional[List[str]] = None
         self.paths_GT: Optional[List[str]] = None
-        self.sizes_LQ: Optional[int] = None
-        self.sizes_GT: Optional[int] = None
 
-        self.paths_GT, self.sizes_GT = util.get_image_paths(
-            self.data_type, opt["dataroot_GT"]
-        )
-        self.paths_LQ, self.sizes_LQ = util.get_image_paths(
-            self.data_type, opt["dataroot_LQ"]
-        )
+        self.paths_GT = util.get_image_paths(self.data_type, opt["dataroot_GT"])
+        self.paths_LQ = util.get_image_paths(self.data_type, opt["dataroot_LQ"])
 
         assert self.paths_GT, "Error: GT path is empty."
 
@@ -42,6 +36,8 @@ class LQGTDataset(data.Dataset):
     def __getitem__(self, index: int) -> Dict[str, Union[Any, str]]:
         GT_path: Optional[str] = None
         LQ_path: Optional[str] = None
+
+        print(self.opt)
 
         scale: int = int(self.opt["scale"])
         GT_size: int = int(self.opt["GT_size"])
@@ -81,6 +77,7 @@ class LQGTDataset(data.Dataset):
                     img_GT = cv2.cvtColor(img_GT, cv2.COLOR_GRAY2BGR)
 
             H, W, _ = img_GT.shape
+            img_LQ = cv2.resize(np.copy(img_GT), (H_s // scale, W_s // scale))
             # TODO: resize (img_GT, 1 / scale)
 
         # augmentation
@@ -117,7 +114,7 @@ class LQGTDataset(data.Dataset):
                 [img_LQ, img_GT], bool(self.opt["use_flip"]), bool(self.opt["use_rot"])
             )
 
-        # BGR to RGB
+        # BGR to RGB, numpy to tensor
         if img_GT.shape[2] == 3:
             img_GT = img_GT[:, :, [2, 1, 0]]
             img_LQ = img_LQ[:, :, [2, 1, 0]]

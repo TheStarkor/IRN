@@ -1,14 +1,54 @@
+import os
 import cv2  # type: ignore
 import numpy as np  # type: ignore
 import random
-from typing import Tuple, List, Any
+from typing import Tuple, List, Any, Optional
 
 
-def get_image_paths(data_type: str, dataroot: str) -> Tuple[List[str], int]:
-    # TODO
-    a: List[str] = ["aa", "a"]
-    b: int = 10
-    return a, b
+IMG_EXTENSIONS = [
+    ".jpg",
+    ".JPG",
+    ".jpeg",
+    ".JPEG",
+    ".png",
+    ".PNG",
+    ".ppm",
+    ".PPM",
+    ".bmp",
+    ".BMP",
+]
+
+
+def is_image_file(filename: str) -> bool:
+    return any(filename.endswith(extension) for extension in IMG_EXTENSIONS)
+
+
+def _get_paths_from_images(path: str) -> List[str]:
+    assert os.path.isdir(path), f"{path:s} is not a valid directory"
+
+    images = []
+
+    for dirpath, _, fnames in sorted(os.walk(path)):
+        for fname in sorted(fnames):
+            if is_image_file(fname):
+                img_path: str = os.path.join(dirpath, fname)
+                images.append(img_path)
+
+    assert images, f"{path:s} has no valid image file"
+    return images
+
+
+def get_image_paths(data_type: str, dataroot: str) -> List[str]:
+    paths: Optional[List[str]] = None
+
+    if dataroot is not None:
+        if data_type == "img":
+            paths = sorted(_get_paths_from_images(dataroot))
+        else:
+            raise NotImplementedError(
+                "data_type [{:s}] is not recognized.".format(data_type)
+            )
+    return paths
 
 
 def read_img(path: str) -> Any:

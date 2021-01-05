@@ -9,12 +9,12 @@ datasets:
   train:
     name: DIV2K
     mode: LQGT
-    dataroot_GT: ~
+    dataroot_GT: datasets/Set14
     dataroot_LQ: ~
 
     use_shuffle: true
     n_workers: 4
-    batch_size: 16
+    batch_size: 8
     GT_size: 144
     use_flip: true
     use_rot: true
@@ -25,3 +25,6 @@ datasets:
     mode: LQGT
     dataroot_GT: ~
     dataroot_LQ: ~
+
+train:
+  niter: 500000
