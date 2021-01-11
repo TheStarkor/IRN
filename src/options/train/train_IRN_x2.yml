@@ -35,5 +35,10 @@ network_G:
   scale: 2
   init: xavier
 
+path:
+  pretrain_model_G: ~
+  strict_load: true
+  resume_state: ~
+
 train:
   niter: 500000

@@ -22,7 +22,7 @@ class IRNModel(BaseModel):
         self.netG = DataParallel(self.netG)
 
         self.print_network()
-        self.load()
+        # self.load() TODO
 
         # TODO
 
@@ -34,3 +34,9 @@ class IRNModel(BaseModel):
             net_struc_str: str = f'{self.netG.__class__.__name__}'
         logger.info(f'Network G structure: {net_struc_str}, with parameters: {n}')
         logger.info(s)
+
+    def load(self):
+        # load_path_G: str = self.opt['path']['pretrain_model_G']
+        # if load_path_G is not None:
+        #     logger.info(f'Loading model for G [{load_path_G}] ...')
+            # self.load_network(load_path_G, self.netG, self.opt['path']['strict_load'])
