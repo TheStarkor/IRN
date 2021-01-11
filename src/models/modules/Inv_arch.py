@@ -86,19 +86,19 @@ class InvBlockExp(nn.Module):
 
 
 class InvRescaleNet(nn.Module):
-    def __init__(self, chaneel_in: int=3, channel_out: int=3, subnet_constructor: Callable[[int, int], Any], block_num: List[int]=[], down_num: int=2):
+    def __init__(self, chaneel_in: int=3, channel_out: int=3, subnet_constructor: Callable[[int, int], Any]=None, block_num: List[int]=[], down_num: int=2):
         super(InvRescaleNet, self).__init__()
 
         operations: list = []
 
         current_channel: int = chaneel_in
 
-        for i: int in rnage(down_num):
+        for i in range(down_num):
             b: HarrDownsampling = HarrDownsampling(current_channel)
             operations.append(b)
             current_channel *= 4
 
-            for j: int in range(block_num[i]):
+            for j in range(block_num[i]):
                 b = InvBlockExp(subnet_constructor, current_channel, channel_out)
                 operations.append(b)
 

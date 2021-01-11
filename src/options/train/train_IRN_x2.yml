@@ -26,5 +26,14 @@ datasets:
     dataroot_GT: ~
     dataroot_LQ: ~
 
+network_G:
+  which_model_G:
+    subnet_type: DBNet
+  in_nc: 3
+  out_nc: 3
+  block_num: [8]
+  scale: 2
+  init: xavier
+
 train:
   niter: 500000

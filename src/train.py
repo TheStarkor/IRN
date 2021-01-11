@@ -7,6 +7,7 @@ from typing import Dict, Union, Any
 import options.options as option
 from utils import util
 from data import create_dataset, create_dataloader
+from models import create_model
 
 PATH = "training"
 NAME = "testing"
@@ -71,7 +72,7 @@ def main():
         else:
             raise NotImplementedError(f"Phase [{phase:s}] is not recognized")
 
-    # TODO : create model
+    model = create_model(opt)
 
     # TODO : training
 

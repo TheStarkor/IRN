@@ -2,6 +2,7 @@ import os
 from collections import OrderedDict
 import torch
 import torch.nn as nn
+from typing import Tuple
 
 class BaseModel():
     def __init__(self, opt: dict):
@@ -48,9 +49,12 @@ class BaseModel():
         # TODO
         pass
 
-    def get_network_description(self, network):
-        # TODO
-        pass
+    def get_network_description(self, network) -> Tuple[str, int]:
+        if isinstance(network, nn.DataParallel):
+            network = network.module
+        s: str = str(network)
+        n: int = sum(map(lambda x: x.numel(), network.parameters()))
+        return s, n
 
     def save_network(self, network, network_label, iter_label):
         # TODO
