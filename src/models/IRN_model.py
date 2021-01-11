@@ -36,6 +36,7 @@ class IRNModel(BaseModel):
         logger.info(s)
 
     def load(self):
+        pass
         # load_path_G: str = self.opt['path']['pretrain_model_G']
         # if load_path_G is not None:
         #     logger.info(f'Loading model for G [{load_path_G}] ...')
