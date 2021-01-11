@@ -3,7 +3,7 @@ import random
 import cv2  # type: ignore
 import numpy as np  # type: ignore
 import torch
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any, Union, cast
 
 import data.util as util
 
@@ -41,6 +41,7 @@ class LQGTDataset(data.Dataset):
         GT_size: int = int(self.opt["GT_size"])
 
         # get GT image
+        self.paths_GT = cast(List[str], self.paths_GT)
         GT_path = self.paths_GT[index]
         img_GT: Any = util.read_img(GT_path)
 

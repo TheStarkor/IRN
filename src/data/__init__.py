@@ -1,6 +1,6 @@
 import logging
 import torch
-from typing import Dict, Union, Type
+from typing import Dict, Union, Type, cast
 from data.LQGT_dataset import LQGTDataset
 
 
@@ -13,6 +13,7 @@ def create_dataloader(
     phase: str = dataset_opt["phase"]
 
     if phase == "train":
+        opt = cast(Dict[str, str], opt)
         num_workers: int = int(dataset_opt["n_workers"]) * len(opt["gpu_ids"])
         batch_size: int = int(dataset_opt["batch_size"])
 
