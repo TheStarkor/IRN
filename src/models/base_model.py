@@ -4,13 +4,14 @@ import torch
 import torch.nn as nn
 from typing import Tuple
 
-class BaseModel():
+
+class BaseModel:
     def __init__(self, opt: dict):
         self.opt: dict = opt
-        self.device = torch.device('cuda' if opt['gpu_ids'] is not None else 'cpu')
-        self.is_train: bool = bool(opt['is_train'])
+        self.device = torch.device("cuda" if opt["gpu_ids"] is not None else "cpu")
+        self.is_train: bool = bool(opt["is_train"])
         self.schedulers: list = []
-        self.optimizers: list = []        
+        self.optimizers: list = []
 
     def feed_data(self, data):
         pass

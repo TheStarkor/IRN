@@ -41,4 +41,12 @@ path:
   resume_state: ~
 
 train:
+  lr_G: !!float 2e-4
+  beta1: 0.9
+  beta2: 0.999
   niter: 500000
+
+  pixel_criterion_forw: l2
+  pixel_criterion_back: l1
+
+  weight_decay_G: !!float 1e-5

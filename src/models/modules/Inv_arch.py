@@ -26,29 +26,46 @@ class HarrDownsampling(nn.Module):
         self.harr_weights = nn.Parameter(self.harr_weights)
         self.harr_weights.requires_grad = False
 
-    def forward(self, x, rev: bool=False):
+    def forward(self, x, rev: bool = False):
         if not rev:
             self.elements = x.shape[1] * x.shape[2] * x.shape[3]
-            self.last_jac = self.elements / 4 * np.log(1/16.)
+            self.last_jac = self.elements / 4 * np.log(1 / 16.0)
 
-            out = F.conv2d(x, self.harr_weights, bias=None, stride=2, groups=self.channel_in) / 4.0
-            out = out.reshape([x.shape[0], self.channel_in, 4, x.shpae[2] // 2, x.shape[3] // 2])
+            out = (
+                F.conv2d(
+                    x, self.harr_weights, bias=None, stride=2, groups=self.channel_in
+                )
+                / 4.0
+            )
+            out = out.reshape(
+                [x.shape[0], self.channel_in, 4, x.shpae[2] // 2, x.shape[3] // 2]
+            )
             out = torch.transpose(out, 1, 2)
-            out = out.reshape([x.shape[0], self.channel_in * 4, x.shape[2] // 2, x.shape[3] // 2])
+            out = out.reshape(
+                [x.shape[0], self.channel_in * 4, x.shape[2] // 2, x.shape[3] // 2]
+            )
             return out
         else:
             self.elements = x.shape[1] * x.shape[2] * x.shape[3]
-            self.last_jac = self.elements / 4 * np.log(16.)
+            self.last_jac = self.elements / 4 * np.log(16.0)
 
             out = x.reshape([x.shape[0], 4, self.channel_in, x.shape[2], x.shape[3]])
             out = torch.transpose(out, 1, 2)
             out = out.reshape([x.shape[0], self.channel_in * 4, x.shape[2], x.shape[3]])
-            out = F.conv_transpose2d(out, self.harr_weights, bias=None, stride=2, groups=self.channel_in)
+            out = F.conv_transpose2d(
+                out, self.harr_weights, bias=None, stride=2, groups=self.channel_in
+            )
             return out
 
 
 class InvBlockExp(nn.Module):
-    def __init__(self, subnet_constructor: Callable[[int, int], Any], channel_num: int, channel_split_num: int, clamp: float=1.):
+    def __init__(
+        self,
+        subnet_constructor: Callable[[int, int], Any],
+        channel_num: int,
+        channel_split_num: int,
+        clamp: float = 1.0,
+    ):
         super(InvBlockExp, self).__init__()
 
         self.split_len1: int = channel_split_num
@@ -61,9 +78,11 @@ class InvBlockExp(nn.Module):
         self.G = subnet_constructor(self.split_len1, self.split_len2)
         self.H = subnet_constructor(self.split_len1, self.split_len2)
 
-    def forward(self, x, rev: bool=False):
+    def forward(self, x, rev: bool = False):
         # TODO : study
-        x1, x2 = x.narrow(1, 0, self.split_len1), x.narrow(1, self.split_len1, self.split_len2)
+        x1, x2 = x.narrow(1, 0, self.split_len1), x.narrow(
+            1, self.split_len1, self.split_len2
+        )
 
         if not rev:
             y1 = x1 + self.F(x2)
@@ -71,22 +90,29 @@ class InvBlockExp(nn.Module):
             y2 = x2.mul(torch.exp(self.s)) + self.G(y1)
         else:
             self.s = self.clamp * (torch.sigmoid(self.H(x1)) * 2 - 1)
-            y2 = (x2 - self.G(x1)).div(torch.exp(self.s)) # TODO : study
+            y2 = (x2 - self.G(x1)).div(torch.exp(self.s))  # TODO : study
             y1 = x1 - self.F(y2)
 
         return torch.cat((y1, y2), 1)
 
-    def jacobian(self, x, rev: bool=False):
+    def jacobian(self, x, rev: bool = False):
         if not rev:
             jac = torch.sum(self.s)
         else:
             jac = -torch.sum(self.s)
-        
+
         return jac / x.shape[0]
 
 
 class InvRescaleNet(nn.Module):
-    def __init__(self, chaneel_in: int=3, channel_out: int=3, subnet_constructor: Callable[[int, int], Any]=None, block_num: List[int]=[], down_num: int=2):
+    def __init__(
+        self,
+        chaneel_in: int = 3,
+        channel_out: int = 3,
+        subnet_constructor: Callable[[int, int], Any] = None,
+        block_num: List[int] = [],
+        down_num: int = 2,
+    ):
         super(InvRescaleNet, self).__init__()
 
         operations: list = []
@@ -104,7 +130,7 @@ class InvRescaleNet(nn.Module):
 
         self.operations = nn.ModuleList(operations)
 
-    def forward(self, x, rev: bool=False, cal_jacobian: bool=False):
+    def forward(self, x, rev: bool = False, cal_jacobian: bool = False):
         out = x
         jacobian = 0
 

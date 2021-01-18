@@ -6,7 +6,14 @@ import models.modules.module_util as mutil
 
 
 class DenseBlock(nn.Module):
-    def __init__(self, channel_in: int, channel_out: int, init: str='xavier', gc: int=32, bias=True):
+    def __init__(
+        self,
+        channel_in: int,
+        channel_out: int,
+        init: str = "xavier",
+        gc: int = 32,
+        bias=True,
+    ):
         # https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html
         super(DenseBlock, self).__init__()
         self.conv1 = nn.Conv2d(channel_in, gc, 3, 1, 1, bias=bias)
@@ -16,10 +23,14 @@ class DenseBlock(nn.Module):
         self.conv5 = nn.Conv2d(channel_in + 4 * gc, channel_out, 3, 1, 1, bias=bias)
         self.lrelu = nn.LeakyReLU(negative_slope=0.2, inplace=True)
 
-        if init == 'xavier':
-            mutil.initialize_weights_xavier([self.conv1, self.conv2, self.conv3, self.conv4], 0.1)
+        if init == "xavier":
+            mutil.initialize_weights_xavier(
+                [self.conv1, self.conv2, self.conv3, self.conv4], 0.1
+            )
         else:
-            mutil.initialize_weights([self.conv1, self.conv2, self.conv3, self.conv4], 0.1)
+            mutil.initialize_weights(
+                [self.conv1, self.conv2, self.conv3, self.conv4], 0.1
+            )
         mutil.initialize_weights(self.conv5, 0)
 
     def forward(self, x):
@@ -32,10 +43,10 @@ class DenseBlock(nn.Module):
         return x5
 
 
-def subnet(net_structure: str, init='xavier'):
+def subnet(net_structure: str, init="xavier"):
     def constructor(channel_in: int, channel_out: int):
-        if net_structure == 'DBNet':
-            if init == 'xavier':
+        if net_structure == "DBNet":
+            if init == "xavier":
                 return DenseBlock(channel_in, channel_out, init)
             else:
                 return DenseBlock(channel_in, channel_out)
