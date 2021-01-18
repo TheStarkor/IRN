@@ -60,6 +60,8 @@ class IRNModel(BaseModel):
 
             # TODO : scheduler
 
+            self.log_dict = OrderedDict()
+
     def print_network(self):
         s, n = self.get_network_description(self.netG)
         if isinstance(self.netG, nn.DataParallel):
@@ -89,7 +91,7 @@ class IRNModel(BaseModel):
             out, y
         )
 
-        z = z.shape([out.shape[0], -1])
+        z = z.reshape([out.shape[0], -1])
         l_forw_ce = self.train_opt["lambda_ce_forw"] * torch.sum(z ** 2) / z.shape[0]
 
         return l_forw_fit, l_forw_ce
