@@ -6,8 +6,8 @@ from torch.nn.parallel import DataParallel
 
 import models.networks as networks
 from .base_model import BaseModel
-from models.modules.Quantization import Quantization
-from models.modules.loss import ReconstructionLoss
+from models.modules.Quantization import Quantization  # type: ignore
+from models.modules.loss import ReconstructionLoss  # type: ignore
 
 logger = logging.getLogger("base")
 
@@ -16,7 +16,7 @@ class IRNModel(BaseModel):
     def __init__(self, opt: dict):
         super(IRNModel, self).__init__(opt)
 
-        self.train_opt: str = opt["train"]
+        self.train_opt: dict = opt["train"]
         # self.test_opt: str = opt['test']
 
         # TODO : fix
@@ -58,6 +58,8 @@ class IRNModel(BaseModel):
                 betas=(self.train_opt["beta1"], self.train_opt["beta2"]),
             )
 
+            # TODO : scheduler
+
     def print_network(self):
         s, n = self.get_network_description(self.netG)
         if isinstance(self.netG, nn.DataParallel):
@@ -66,6 +68,78 @@ class IRNModel(BaseModel):
             net_struc_str: str = f"{self.netG.__class__.__name__}"
         logger.info(f"Network G structure: {net_struc_str}, with parameters: {n}")
         logger.info(s)
+
+    def feed_data(self, data):
+        # TODO : fix
+        # self.ref_L = data['LQ'].to(self.device)
+        # self.real_H = data['GT'].to(self.device)
+        self.ref_L = data["LQ"]
+        self.real_H = data["GT"]
+
+        ### for debugging
+        # from torchvision.utils import save_image
+        # save_image(self.ref_L, 'img1.png')
+        # save_image(self.real_H, 'img2.png')
+
+    def gaussian_batch(self, dims):
+        return torch.randn(tuple(dims)).to(self.device)
+
+    def loss_forward(self, out, y, z):
+        l_forw_fit = self.train_opt["lambda_fit_forw"] * self.Reconstruction_forw(
+            out, y
+        )
+
+        z = z.shape([out.shape[0], -1])
+        l_forw_ce = self.train_opt["lambda_ce_forw"] * torch.sum(z ** 2) / z.shape[0]
+
+        return l_forw_fit, l_forw_ce
+
+    def loss_backward(self, x, y):
+        x_samples = self.netG(x=y, rev=True)
+        x_samples_image = x_samples[:, :3, :, :]
+        l_back_rec = self.train_opt["lambda_rec_back"] * self.Reconstruction_back(
+            x, x_samples_image
+        )
+
+        return l_back_rec
+
+    def optimize_parameters(self, step):
+        self.optimizer_G.zero_grad()
+
+        self.input = self.real_H
+        self.output = self.netG(x=self.input)
+
+        zshape = self.output[:, 3:, :, :].shape
+        LR_ref = self.ref_L.detach()
+
+        l_forw_fit, l_forw_ce = self.loss_forward(
+            self.output[:, :3, :, :], LR_ref, self.output[:, 3:, :, :]
+        )
+
+        LR = self.Quantization(self.output[:, :3, :, :])
+        # TODO : fix
+        gaussian_scale = 1
+        y_ = torch.cat((LR, gaussian_scale * self.gaussian_batch(zshape)), dim=1)
+
+        l_back_rec = self.loss_backward(self.real_H, y_)
+
+        loss = l_forw_fit + l_back_rec + l_forw_ce
+        loss.backward()
+
+        if self.train_opt["gradient_clipping"]:
+            nn.utils.clip_grad_norm_(
+                self.netG.parameters(), self.train_opt["gradient_clipping"]
+            )
+
+        self.optimizer_G.step()
+
+        self.log_dict["l_forw_fit"] = l_forw_fit.item()
+        self.log_dict["l_forw_ce"] = l_forw_ce.item()
+        self.log_dict["l_back_rec"] = l_back_rec.item()
+
+        logger.info(
+            f"l_forw_fit: {self.log_dict['l_forw_fit']}, l_forw_ce: {self.log_dict['l_forw_ce']}, l_back_rec: {self.log_dict['l_back_rec']}"
+        )
 
     def load(self):
         pass

@@ -38,7 +38,7 @@ class HarrDownsampling(nn.Module):
                 / 4.0
             )
             out = out.reshape(
-                [x.shape[0], self.channel_in, 4, x.shpae[2] // 2, x.shape[3] // 2]
+                [x.shape[0], self.channel_in, 4, x.shape[2] // 2, x.shape[3] // 2]
             )
             out = torch.transpose(out, 1, 2)
             out = out.reshape(

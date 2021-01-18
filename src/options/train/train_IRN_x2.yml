@@ -49,4 +49,8 @@ train:
   pixel_criterion_forw: l2
   pixel_criterion_back: l1
 
+  lambda_fit_forw: 4.
+  lambda_rec_back: 1
+  lambda_ce_forw: 1
   weight_decay_G: !!float 1e-5
+  gradient_clipping: 10

@@ -74,7 +74,21 @@ def main():
 
     model = create_model(opt)
 
+    current_step: int = 0
+    start_epoch: int = 0
+
     # TODO : training
+    logger.info(f"Start training from epoch: {start_epoch}, iter: {current_step}")
+    # for epoch in range(start_epoch, total_epochs + 1):
+    for epoch in range(start_epoch, 3 + 1):
+        for _, train_data in enumerate(train_loader):
+            current_step += 1
+            if current_step > total_iters:
+                break
+
+            ### training
+            model.feed_data(train_data)
+            model.optimize_parameters(current_step)
 
 
 if __name__ == "__main__":
