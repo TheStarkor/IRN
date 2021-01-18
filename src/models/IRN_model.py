@@ -20,8 +20,8 @@ class IRNModel(BaseModel):
         # self.test_opt: str = opt['test']
 
         # TODO : fix
-        # self.netG = networks.define_G(opt).to(self.device)
-        self.netG = networks.define_G(opt)
+        self.netG = networks.define_G(opt).to(self.device)
+        # self.netG = networks.define_G(opt)
         self.netG = DataParallel(self.netG)
 
         self.print_network()
@@ -71,10 +71,10 @@ class IRNModel(BaseModel):
 
     def feed_data(self, data):
         # TODO : fix
-        # self.ref_L = data['LQ'].to(self.device)
-        # self.real_H = data['GT'].to(self.device)
-        self.ref_L = data["LQ"]
-        self.real_H = data["GT"]
+        self.ref_L = data['LQ'].to(self.device)
+        self.real_H = data['GT'].to(self.device)
+        # self.ref_L = data["LQ"]
+        # self.real_H = data["GT"]
 
         ### for debugging
         # from torchvision.utils import save_image
