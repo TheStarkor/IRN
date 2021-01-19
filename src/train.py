@@ -114,7 +114,9 @@ def main():
                     util.mkdir(img_dir)
 
                     model.feed_data(val_data)
-                    model.test()
+                    # TODO: fix
+                    if model.test() == False:
+                        continue
 
                     visuals = model.get_current_visuals()
                     sr_img = util.tensor2img(visuals['SR'])  # uint8

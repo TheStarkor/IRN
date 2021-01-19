@@ -49,7 +49,7 @@ train:
   pixel_criterion_forw: l2
   pixel_criterion_back: l1
 
-  val_freq: 20
+  val_freq: !!float 5e3
 
   lambda_fit_forw: 4.
   lambda_rec_back: 1
@@ -58,5 +58,5 @@ train:
   gradient_clipping: 10
 
 logger:
-  print_freq: 10
+  print_freq: 100
   save_checkpoint_freq: !!float 5e3
