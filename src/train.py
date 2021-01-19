@@ -91,8 +91,8 @@ def main():
                 break
 
             ### training
-            # model.feed_data(train_data)
-            # model.optimize_parameters(current_step)
+            model.feed_data(train_data)
+            model.optimize_parameters(current_step)
 
             if current_step % opt['logger']['print_freq'] == 0:
                 logs = model.get_current_log()
