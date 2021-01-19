@@ -161,7 +161,7 @@ class IRNModel(BaseModel):
             self.forw_L = self.netG(x=self.input)[:, :3, :, :]
             self.forw_L = self.Quantization(self.forw_L)
             # TODO: fix
-            if (self.forw_L.shape[3] != self.gaussian_batch(zshape).shape[3]):
+            if (self.forw_L.shape[3] != self.gaussian_batch(zshape).shape[3] or self.forw_L.shape[2] != self.gaussian_batch(zshape).shape[2]):
                 return False
             y_forw = torch.cat((self.forw_L, gaussian_scale * self.gaussian_batch(zshape)), dim=1)
             self.fake_H = self.netG(x=y_forw, rev=True)[:, :3, :, :]
