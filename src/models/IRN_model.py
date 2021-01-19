@@ -61,7 +61,7 @@ class IRNModel(BaseModel):
 
             # TODO : scheduler
 
-            self.log_dict = OrderedDict()
+            self.log_dict: dict = OrderedDict()
 
     def print_network(self):
         s, n = self.get_network_description(self.netG)
