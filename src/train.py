@@ -111,7 +111,6 @@ def main():
                     idx += 1
                     img_name = os.path.splitext(os.path.basename(val_data['LQ_path'][0]))[0]
                     img_dir = os.path.join(opt['path']['val_images'], img_name)
-                    print(img_dir)
                     util.mkdir(img_dir)
 
                     model.feed_data(val_data)
