@@ -4,6 +4,7 @@ import random
 import numpy as np  # type: ignore
 import torch
 import time
+import cv2  # type: ignore
 from datetime import datetime
 from collections import OrderedDict
 from torchvision.utils import save_image, make_grid  # type: ignore
@@ -34,7 +35,7 @@ def get_timestamp():
 def mkdir(path):
     if not os.path.exists(path):
         os.makedirs(path)
-        
+
 
 def mkdir_and_rename(path):
     if os.path.exists(path):
