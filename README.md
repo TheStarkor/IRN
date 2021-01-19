@@ -11,6 +11,13 @@ implementation of paper: Invertible Image Rescaling (ECCV 2020 Oral)
 
 ## Get Started
 
+### Docker
+```
+$ docker build -t irn -f Dockerfile.train
+$ docker run --gpus all irn
+```
+
+### Local
 ```
 $ ./src/run.sh
 ```
