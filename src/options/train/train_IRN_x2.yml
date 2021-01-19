@@ -23,7 +23,7 @@ datasets:
   val:
     name: val_DIV2K
     mode: LQGT
-    dataroot_GT: ~
+    dataroot_GT: datasets/Set14
     dataroot_LQ: ~
 
 network_G:
@@ -49,8 +49,14 @@ train:
   pixel_criterion_forw: l2
   pixel_criterion_back: l1
 
+  val_freq: 20
+
   lambda_fit_forw: 4.
   lambda_rec_back: 1
   lambda_ce_forw: 1
   weight_decay_G: !!float 1e-5
   gradient_clipping: 10
+
+logger:
+  print_freq: 10
+  save_checkpoint_freq: !!float 5e3

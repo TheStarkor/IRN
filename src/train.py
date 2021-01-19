@@ -3,6 +3,7 @@ import logging
 import torch
 import math
 from typing import Dict, Union, Any
+import os
 
 import options.options as option
 from utils import util
@@ -34,6 +35,8 @@ def main():
     )
 
     logger: Logger = logging.getLogger("base")
+
+    opt = option.dict_to_nonedict(opt)
 
     # TODO : tensorboard logger
 
@@ -68,7 +71,8 @@ def main():
                 )
             )
         elif phase == "val":
-            print("VAL!")
+            val_set = create_dataset(dataset_opt)
+            val_loader = create_dataloader(val_set, dataset_opt, opt, None)
         else:
             raise NotImplementedError(f"Phase [{phase:s}] is not recognized")
 
@@ -80,16 +84,79 @@ def main():
     # TODO : training
     logger.info(f"Start training from epoch: {start_epoch}, iter: {current_step}")
     # for epoch in range(start_epoch, total_epochs + 1):
-    for epoch in range(start_epoch, 3 + 1):
+    for epoch in range(start_epoch, total_epochs + 1):
         for _, train_data in enumerate(train_loader):
             current_step += 1
             if current_step > total_iters:
                 break
 
             ### training
-            model.feed_data(train_data)
-            model.optimize_parameters(current_step)
+            # model.feed_data(train_data)
+            # model.optimize_parameters(current_step)
 
+            if current_step % opt['logger']['print_freq'] == 0:
+                logs = model.get_current_log()
+                message = f'<epoch:{epoch:3d}, iter:{current_step:8d}, lr:{model.get_current_learning_rate():3e}'
+                for k, v in logs.items():
+                    messages += f'{k:s}: {v:.4e}'
+
+                    # TODO: tensorboard
+                logger.info(message)
+
+            # validation
+            if current_step % opt['train']['val_freq'] == 0:
+                avg_psnr: float = 0.0
+                idx: int = 0
+                for val_data in val_loader:
+                    idx += 1
+                    img_name = os.path.splitext(os.path.basename(val_data['LQ_path'][0]))[0]
+                    img_dir = os.path.join(opt['path']['val_images'], img_name)
+                    print(img_dir)
+                    util.mkdir(img_dir)
+
+                    model.feed_data(val_data)
+                    model.test()
+
+                    visuals = model.get_current_visuals()
+                    sr_img = util.tensor2img(visuals['SR'])  # uint8
+                    gt_img = util.tensor2img(visuals['GT'])  # uint8
+
+                    lr_img = util.tensor2img(visuals['LR'])
+
+                    gtl_img = util.tensor2img(visuals['LR_ref'])
+
+                    # Save SR images for reference
+                    save_img_path = os.path.join(img_dir,
+                                                 '{:s}_{:d}.png'.format(img_name, current_step))
+                    util.save_img(sr_img, save_img_path)
+
+                    # Save LR images
+                    save_img_path_L = os.path.join(img_dir, '{:s}_forwLR_{:d}.png'.format(img_name, current_step))
+                    util.save_img(lr_img, save_img_path_L)
+
+                    # Save ground truth
+                    if current_step == opt['train']['val_freq']:
+                        save_img_path_gt = os.path.join(img_dir, '{:s}_GT_{:d}.png'.format(img_name, current_step))
+                        util.save_img(gt_img, save_img_path_gt)
+                        save_img_path_gtl = os.path.join(img_dir, '{:s}_LR_ref_{:d}.png'.format(img_name, current_step))
+                        util.save_img(gtl_img, save_img_path_gtl)
+
+                    # calculate PSNR
+                    crop_size = opt['scale']
+                    gt_img = gt_img / 255.
+                    sr_img = sr_img / 255.
+                    cropped_sr_img = sr_img[crop_size:-crop_size, crop_size:-crop_size, :]
+                    cropped_gt_img = gt_img[crop_size:-crop_size, crop_size:-crop_size, :]
+                    avg_psnr += util.calculate_psnr(cropped_sr_img * 255, cropped_gt_img * 255)
+
+                avg_psnr = avg_psnr / idx
+
+                # log
+                logger.info('# Validation # PSNR: {:.4e}.'.format(avg_psnr))
+                logger_val = logging.getLogger('val')  # validation logger
+                logger_val.info('<epoch:{:3d}, iter:{:8,d}> psnr: {:.4e}.'.format(
+                    epoch, current_step, avg_psnr))
+                # TODO: tensorboard
 
 if __name__ == "__main__":
     main()

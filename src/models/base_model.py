@@ -47,8 +47,7 @@ class BaseModel:
         pass
 
     def get_current_learning_rate(self):
-        # TODO
-        pass
+        return self.optimizers[0].param_groups[0]['lr']
 
     def get_network_description(self, network) -> Tuple[str, int]:
         if isinstance(network, nn.DataParallel):

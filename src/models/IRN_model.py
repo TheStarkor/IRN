@@ -57,6 +57,7 @@ class IRNModel(BaseModel):
                 weight_decay=wd_G,
                 betas=(self.train_opt["beta1"], self.train_opt["beta2"]),
             )
+            self.optimizers.append(self.optimizer_G)
 
             # TODO : scheduler
 
@@ -139,9 +140,42 @@ class IRNModel(BaseModel):
         self.log_dict["l_forw_ce"] = l_forw_ce.item()
         self.log_dict["l_back_rec"] = l_back_rec.item()
 
-        logger.info(
-            f"l_forw_fit: {self.log_dict['l_forw_fit']}, l_forw_ce: {self.log_dict['l_forw_ce']}, l_back_rec: {self.log_dict['l_back_rec']}"
-        )
+        # logger.info(
+        #     f"l_forw_fit: {self.log_dict['l_forw_fit']}, l_forw_ce: {self.log_dict['l_forw_ce']}, l_back_rec: {self.log_dict['l_back_rec']}"
+        # )
+
+    def test(self):
+        Lshape = self.ref_L.shape
+
+        input_dim = Lshape[1]
+        self.input = self.real_H
+
+        zshape = [Lshape[0], input_dim * (self.opt['scale']**2) - Lshape[1], Lshape[2], Lshape[3]]
+
+        gaussian_scale = 1
+        # if self.test_opt and self.test_opt['gaussian_scale'] != None:
+        #     gaussian_scale = self.test_opt['gaussian_scale']
+
+        self.netG.eval()
+        with torch.no_grad():
+            self.forw_L = self.netG(x=self.input)[:, :3, :, :]
+            self.forw_L = self.Quantization(self.forw_L)
+            y_forw = torch.cat((self.forw_L, gaussian_scale * self.gaussian_batch(zshape)), dim=1)
+            self.fake_H = self.netG(x=y_forw, rev=True)[:, :3, :, :]
+
+        self.netG.train()
+
+    def get_current_log(self):
+        return self.log_dict
+
+    def get_current_visuals(self):
+        out_dict = OrderedDict()
+        out_dict['LR_ref'] = self.ref_L.detach()[0].float().cpu()
+        out_dict['SR'] = self.fake_H.detach()[0].float().cpu()
+        out_dict['LR'] = self.forw_L.detach()[0].float().cpu()
+        out_dict['GT'] = self.real_H.detach()[0].float().cpu()
+        return out_dict
+
 
     def load(self):
         pass
