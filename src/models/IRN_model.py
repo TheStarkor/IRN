@@ -8,6 +8,7 @@ import models.networks as networks
 from .base_model import BaseModel
 from models.modules.Quantization import Quantization  # type: ignore
 from models.modules.loss import ReconstructionLoss  # type: ignore
+import models.lr_scheduler as lr_scheduler
 
 logger = logging.getLogger("base")
 
@@ -60,6 +61,23 @@ class IRNModel(BaseModel):
             self.optimizers.append(self.optimizer_G)
 
             # TODO : scheduler
+            if self.train_opt["lr_scheme"] == "MultiStepLR":
+                for optimizer in self.optimizers:
+                    self.schedulers.append(
+                        lr_scheduler.MultiStepLR_Restart(
+                            optimizer,
+                            self.train_opt["lr_steps"],
+                            restarts=self.train_opt["restarts"],
+                            weights=self.train_opt["restart_weights"],
+                            gamma=self.train_opt["lr_gamma"],
+                            clear_state=self.train_opt["clear_state"],
+                        )
+                    )
+            elif self.train_opt["lr_scheme"] == "CosineAnnealingLR_Restart":
+                pass
+                # TODO
+            else:
+                raise NotImplementedError("MultiStepLR learning rate scheme is enough.")
 
             self.log_dict: dict = OrderedDict()
 
@@ -74,8 +92,8 @@ class IRNModel(BaseModel):
 
     def feed_data(self, data):
         # TODO : fix
-        self.ref_L = data['LQ'].to(self.device)
-        self.real_H = data['GT'].to(self.device)
+        self.ref_L = data["LQ"].to(self.device)
+        self.real_H = data["GT"].to(self.device)
         # self.ref_L = data["LQ"]
         # self.real_H = data["GT"]
 
@@ -150,7 +168,12 @@ class IRNModel(BaseModel):
         input_dim = Lshape[1]
         self.input = self.real_H
 
-        zshape = [Lshape[0], input_dim * (self.opt['scale']**2) - Lshape[1], Lshape[2], Lshape[3]]
+        zshape = [
+            Lshape[0],
+            input_dim * (self.opt["scale"] ** 2) - Lshape[1],
+            Lshape[2],
+            Lshape[3],
+        ]
 
         gaussian_scale = 1
         # if self.test_opt and self.test_opt['gaussian_scale'] != None:
@@ -161,9 +184,14 @@ class IRNModel(BaseModel):
             self.forw_L = self.netG(x=self.input)[:, :3, :, :]
             self.forw_L = self.Quantization(self.forw_L)
             # TODO: fix
-            if (self.forw_L.shape[3] != self.gaussian_batch(zshape).shape[3] or self.forw_L.shape[2] != self.gaussian_batch(zshape).shape[2]):
+            if (
+                self.forw_L.shape[3] != self.gaussian_batch(zshape).shape[3]
+                or self.forw_L.shape[2] != self.gaussian_batch(zshape).shape[2]
+            ):
                 return False
-            y_forw = torch.cat((self.forw_L, gaussian_scale * self.gaussian_batch(zshape)), dim=1)
+            y_forw = torch.cat(
+                (self.forw_L, gaussian_scale * self.gaussian_batch(zshape)), dim=1
+            )
             self.fake_H = self.netG(x=y_forw, rev=True)[:, :3, :, :]
 
         self.netG.train()
@@ -173,12 +201,11 @@ class IRNModel(BaseModel):
 
     def get_current_visuals(self):
         out_dict = OrderedDict()
-        out_dict['LR_ref'] = self.ref_L.detach()[0].float().cpu()
-        out_dict['SR'] = self.fake_H.detach()[0].float().cpu()
-        out_dict['LR'] = self.forw_L.detach()[0].float().cpu()
-        out_dict['GT'] = self.real_H.detach()[0].float().cpu()
+        out_dict["LR_ref"] = self.ref_L.detach()[0].float().cpu()
+        out_dict["SR"] = self.fake_H.detach()[0].float().cpu()
+        out_dict["LR"] = self.forw_L.detach()[0].float().cpu()
+        out_dict["GT"] = self.real_H.detach()[0].float().cpu()
         return out_dict
-
 
     def load(self):
         pass

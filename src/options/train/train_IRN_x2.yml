@@ -46,6 +46,10 @@ train:
   beta2: 0.999
   niter: 500000
 
+  lr_scheme: MultiStepLR
+  lr_steps: [100000, 200000, 300000, 400000]
+  lr_gamma: 0.5
+
   pixel_criterion_forw: l2
   pixel_criterion_back: l1
 

@@ -38,7 +38,7 @@ class LQGTDataset(data.Dataset):
         LQ_path: Optional[str] = None
 
         scale: int = int(self.opt["scale"])
-        GT_size: int = cast(int, self.opt["GT_size"]) # only train
+        GT_size: int = cast(int, self.opt["GT_size"])  # only train
 
         # get GT image
         self.paths_GT = cast(List[str], self.paths_GT)

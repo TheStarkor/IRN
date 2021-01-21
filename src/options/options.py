@@ -36,10 +36,12 @@ def parse(opt_path, is_train=True):
         scale = opt["scale"]
 
     # path
-    opt['path']['root'] = osp.abspath(osp.join(__file__, osp.pardir, osp.pardir, osp.pardir))
+    opt["path"]["root"] = osp.abspath(
+        osp.join(__file__, osp.pardir, osp.pardir, osp.pardir)
+    )
     if is_train:
-        experiments_root = osp.join(opt['path']['root'], 'experiments', opt['name'])
-        opt['path']['val_images'] = osp.join(experiments_root, 'val_images')
+        experiments_root = osp.join(opt["path"]["root"], "experiments", opt["name"])
+        opt["path"]["val_images"] = osp.join(experiments_root, "val_images")
 
     return opt
 

@@ -43,11 +43,22 @@ class BaseModel:
         pass
 
     def update_learning_rate(self, cur_iter, wramup_iter=1):
-        # TODO
-        pass
+        for scheduler in self.schedulers:
+            scheduler.step()
+
+        #### set up warm up learning rate
+        if cur_iter < warmup_iter:
+            # get initial lr for each group
+            init_lr_g_l = self._get_init_lr()
+            # modify warming-up learning rates
+            warm_up_lr_l = []
+            for init_lr_g in init_lr_g_l:
+                warm_up_lr_l.append([v / warmup_iter * cur_iter for v in init_lr_g])
+            # set learning rate
+            self._set_lr(warm_up_lr_l)
 
     def get_current_learning_rate(self):
-        return self.optimizers[0].param_groups[0]['lr']
+        return self.optimizers[0].param_groups[0]["lr"]
 
     def get_network_description(self, network) -> Tuple[str, int]:
         if isinstance(network, nn.DataParallel):
