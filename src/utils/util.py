@@ -38,6 +38,14 @@ def mkdir(path):
         os.makedirs(path)
 
 
+def mkdirs(paths):
+    if isinstance(paths, str):
+        mkdir(paths)
+    else:
+        for path in paths:
+            mkdir(path)
+
+
 def mkdir_and_rename(path):
     if os.path.exists(path):
         new_name = path + "_archived_" + get_timestamp()
