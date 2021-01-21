@@ -182,6 +182,11 @@ def main():
                 )
                 # TODO: tensorboard
 
+            if current_step % opt["logger"]["save_checkpoint_freq"] == 0:
+                logger.info("Saving models and training states.")
+                model.save(current_step)
+                model.save_training_state(epoch, current_step)
+
 
 if __name__ == "__main__":
     main()

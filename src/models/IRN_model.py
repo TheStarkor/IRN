@@ -212,3 +212,6 @@ class IRNModel(BaseModel):
         # if load_path_G is not None:
         #     logger.info(f'Loading model for G [{load_path_G}] ...')
         # self.load_network(load_path_G, self.netG, self.opt['path']['strict_load'])
+
+    def save(self, iter_label):
+        self.save_network(self.netG, "G", iter_label)
