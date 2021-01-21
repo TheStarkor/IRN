@@ -42,7 +42,7 @@ class BaseModel:
         # TODO
         pass
 
-    def update_learning_rate(self, cur_iter, wramup_iter=1):
+    def update_learning_rate(self, cur_iter, warmup_iter=1):
         for scheduler in self.schedulers:
             scheduler.step()
 

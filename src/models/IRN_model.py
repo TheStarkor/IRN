@@ -60,7 +60,6 @@ class IRNModel(BaseModel):
             )
             self.optimizers.append(self.optimizer_G)
 
-            # TODO : scheduler
             if self.train_opt["lr_scheme"] == "MultiStepLR":
                 for optimizer in self.optimizers:
                     self.schedulers.append(
