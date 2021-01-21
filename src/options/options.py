@@ -42,6 +42,7 @@ def parse(opt_path, is_train=True):
     if is_train:
         experiments_root = osp.join(opt["path"]["root"], "experiments", opt["name"])
         opt["path"]["val_images"] = osp.join(experiments_root, "val_images")
+        opt["path"]["models"] = osp.join(experiments_root, "models")
 
     return opt
 
