@@ -24,8 +24,18 @@ def main():
     opt: Dict[str, Any] = option.parse(args.opt, is_train=True)
 
     ### mkdir and loggers
-    # TODO : rm
-    # util.mkdir_and_rename(PATH)
+    util.mkdir_and_rename(
+        opt["path"]["experiments_root"]
+    )  # rename experiment folder if exists
+    util.mkdirs(
+        (
+            path
+            for key, path in opt["path"].items()
+            if not key == "experiments_root"
+            and "pretrain_model" not in key
+            and "resume" not in key
+        )
+    )
 
     util.setup_logger(
         "base", PATH, "train_" + NAME, level=logging.INFO, screen=True, tofile=False
