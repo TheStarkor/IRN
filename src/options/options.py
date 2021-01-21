@@ -44,6 +44,8 @@ def parse(opt_path, is_train=True):
         opt["path"]["experiments_root"] = experiments_root
         opt["path"]["val_images"] = osp.join(experiments_root, "val_images")
         opt["path"]["models"] = osp.join(experiments_root, "models")
+        opt["path"]["training_state"] = osp.join(experiments_root, "training_state")
+        opt["path"]["log"] = experiments_root
 
     return opt
 
