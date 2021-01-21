@@ -42,7 +42,7 @@ class BaseModel:
         # TODO
         pass
 
-    def update_learning_rate(self, cur_iter, wramup_iter=1):
+    def update_learning_rate(self, cur_iter, warmup_iter=1):
         for scheduler in self.schedulers:
             scheduler.step()
 
@@ -68,16 +68,31 @@ class BaseModel:
         return s, n
 
     def save_network(self, network, network_label, iter_label):
-        # TODO
-        pass
+        save_filename: str = f"{iter_label}_{network_label}.pth"
+        save_path: str = os.path.join(self.opt["path"]["models"], save_filename)
+        if isinstance(network, nn.DataParallel) or isinstance(
+            network, DistributedDataParallel
+        ):
+            network = network.module
+        state_dict = network.state_dict()
+        for key, param in state_dict.items():
+            state_dict[key] = param.cpu()
+        torch.save(state_dict, save_path)
 
     def load_network(self, load_path, network, strict=True):
         # TODO
         pass
 
     def save_training_state(self, epoch, iter_step):
-        # TODO
-        pass
+        """Saves training state during training, which will be used for resuming"""
+        state = {"epoch": epoch, "iter": iter_step, "schedulers": [], "optimizers": []}
+        for s in self.schedulers:
+            state["schedulers"].append(s.state_dict())
+        for o in self.optimizers:
+            state["optimizers"].append(o.state_dict())
+        save_filename = "{}.state".format(iter_step)
+        save_path = os.path.join(self.opt["path"]["training_state"], save_filename)
+        torch.save(state, save_path)
 
     def resume_training(self, resume_state):
         # TODO
